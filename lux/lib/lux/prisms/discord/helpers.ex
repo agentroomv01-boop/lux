@@ -1,9 +1,23 @@
 defmodule Lux.Prisms.Discord.Helpers do
   @moduledoc false
 
-  def validate_string(params, key) do
+  def validate_string(params, key, default \\ nil) do
     case get_param(params, key) do
       value when is_binary(value) and value != "" -> {:ok, value}
+      nil when default != nil -> {:ok, default}
+      _ -> {:error, "Missing or invalid #{key}"}
+    end
+  end
+
+  def validate_number(params, key, default \\ nil) do
+    case get_param(params, key) do
+      value when is_number(value) -> {:ok, value}
+      value when is_binary(value) ->
+        case Float.parse(value) do
+          {num, ""} -> {:ok, num}
+          _ -> {:error, "Missing or invalid #{key}"}
+        end
+      nil when default != nil -> {:ok, default}
       _ -> {:error, "Missing or invalid #{key}"}
     end
   end
@@ -11,7 +25,7 @@ defmodule Lux.Prisms.Discord.Helpers do
   def validate_integer(params, key, opts \\ []) do
     min = Keyword.get(opts, :min, nil)
     max = Keyword.get(opts, :max, nil)
-    
+
     case get_param(params, key) do
       value when is_integer(value) ->
         cond do
@@ -19,6 +33,26 @@ defmodule Lux.Prisms.Discord.Helpers do
           max != nil and value > max -> {:error, "#{key} must be <= #{max}"}
           true -> {:ok, value}
         end
+      nil when Keyword.has_key?(opts, :default) ->
+        {:ok, Keyword.get(opts, :default)}
+      _ -> {:error, "Missing or invalid #{key}"}
+    end
+  end
+
+  def validate_boolean(params, key, default \\ false) do
+    case get_param(params, key) do
+      value when is_boolean(value) -> {:ok, value}
+      "true" -> {:ok, true}
+      "false" -> {:ok, false}
+      nil when default != nil -> {:ok, default}
+      _ -> {:error, "Missing or invalid #{key}"}
+    end
+  end
+
+  def validate_list(params, key, default \\ []) do
+    case get_param(params, key) do
+      value when is_list(value) -> {:ok, value}
+      nil when default != nil -> {:ok, default}
       _ -> {:error, "Missing or invalid #{key}"}
     end
   end
