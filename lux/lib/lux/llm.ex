@@ -1,6 +1,7 @@
 defmodule Lux.LLM do
   @moduledoc """
   A module for interacting with LLMs. Defines the behaviours for LLMs and provides a default implementation.
+  Uses Lux.LLM.Providers for universal provider abstraction with fallback, circuit breaker, and cost tracking.
   """
 
   defmodule Response do
@@ -8,16 +9,16 @@ defmodule Lux.LLM do
       A response from an LLM.
     """
 
-    @type t :: %__MODULE__{
-            content: String.t() | nil,
-            tool_calls: [%{type: String.t(), name: String.t(), params: map()}],
-            finish_reason: String.t() | nil,
-            structured_output: map() | nil
+    @type t :: %__MODULE__{\
+            content: String.t() | nil,\
+            tool_calls: [%{type: String.t(), name: String.t(), params: map()}],\
+            finish_reason: String.t() | nil,\
+            structured_output: map() | nil\
           }
 
-    defstruct content: nil,
-              tool_calls: [],
-              finish_reason: nil,
+    defstruct content: nil,\
+              tool_calls: [],\
+              finish_reason: nil,\
               structured_output: nil
   end
 
@@ -27,7 +28,7 @@ defmodule Lux.LLM do
 
   @callback call(prompt(), tools(), options()) :: {:ok, Response.t()} | {:error, String.t()}
 
-  @default_module Application.compile_env(:lux, [Lux.LLM, :default_module], Lux.LLM.OpenAI)
+  @default_module Lux.LLM.Providers
 
   defdelegate call(prompt, tools, options), to: @default_module
 end
