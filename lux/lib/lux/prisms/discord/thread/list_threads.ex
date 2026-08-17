@@ -48,11 +48,11 @@ defmodule Lux.Prisms.Discord.Thread.ListThreads do
   Lists all threads in a Discord channel.
   """
   def handler(params, agent) do
-    with {:ok, channel_id} <- Lux.Prisms.Discord.Helpers.validate_string(params, :channel_id) do
-      agent_name = agent[:name] || "Unknown Agent"
-      Logger.info("Agent #{agent_name} listing threads in channel #{channel_id}")
+      with {:ok, channel_id} <- Lux.Prisms.Discord.Helpers.validate_string(params, :channel_id) do
+        agent_name = agent[:name] || "Unknown Agent"
+        Logger.info("Agent #{agent_name} listing threads in channel #{channel_id}")
 
-      case Client.request(:get, "/channels/#{channel_id}/threads") do
+        case Client.request(:get, Lux.Prisms.Discord.Helpers.client_opts(params, max_retries: 2)) do
         {:ok, %{"threads" => threads}} ->
           Logger.info("Found #{length(threads)} threads in channel #{channel_id}")
           {:ok, %{threads: threads}}

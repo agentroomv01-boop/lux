@@ -47,13 +47,11 @@ defmodule Lux.Prisms.Discord.Server.JoinServer do
   Handles the request to join a Discord server via invite.
   """
   def handler(params, agent) do
-    with {:ok, invite_code} <- Lux.Prisms.Discord.Helpers.validate_string(params, :invite_code) do
-      agent_name = agent[:name] || "Unknown Agent"
-      Logger.info("Agent #{agent_name} joining server with invite: #{invite_code}")
+      with {:ok, invite_code} <- Lux.Prisms.Discord.Helpers.validate_string(params, :invite_code) do
+        agent_name = agent[:name] || "Unknown Agent"
+        Logger.info("Agent #{agent_name} joining server with invite: #{invite_code}")
 
-      case Client.request(:post, "/invites/#{invite_code}", %{
-        json: %{}
-      }) do
+        case Client.request(:post, "/invites/#{invite_code}", Lux.Prisms.Discord.Helpers.client_opts(params, max_retries: 2)) do
         {:ok, %{"guild" => %{"id" => guild_id, "name" => guild_name}}} ->
           Logger.info("Successfully joined server #{guild_name} (#{guild_id})")
           {:ok, %{joined: true, guild_id: guild_id, guild_name: guild_name}}
