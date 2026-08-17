@@ -13,7 +13,7 @@ defmodule Lux.Prisms.Discord.Events.SetEventReminder do
       type: :object,
       properties: %{
         guild_id: %{type: :string, pattern: "^[0-9]{17,20}$"},
-        match: @{schedule_id: event_id}
+        match: {schedule_id: event_id}
         event_id: %{type: :string, pattern: "^[0-9]{17,20}$", description: "Scheduled event ID"},
         reminder_before_seconds: %{
           type: :integer,
